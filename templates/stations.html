@@ -27,7 +27,6 @@
                                     <th class="text-center">Estado</th>
                                     <th class="text-center">ID Bike</th>
                                     <th class="text-center">ID User</th>
-                                    <th class="text-center">Ultima modificación</th>
                                     <th class="action text-right">Acción</th>
                                 </tr>
                                 </thead>
@@ -68,9 +67,6 @@
                                         <td class="text-center">
                                             <span>{{ station["id_user"]["value"] }}</span>
                                         </td>
-                                        <td class="text-center">
-                                            <span> AÑADIR FECHA </span>
-                                        </td>
                                         <td class="text-right">
                                             {% if station["state"]["value"] == "DISPONIBLE" and user_data["state"]["value"] == "DISPONIBLE" %}
                                                 <span><a href="#"
@@ -78,23 +74,23 @@
                                                          class="text-primary"
                                                          data-toggle="tooltip" title="Reservar"
                                                          data-original-title="view"><i
-                                                        class="fa fa-solid fa-bookmark"></i></a>
+                                                        class="fa fa-solid fa-bookmark">  Reservar</i></a>
                                                 </span>
                                             {% endif %}
                                             {% if station["state"]["value"] == "RESERVADO" and user_data["state"]["value"] == "RESERVADO"
                                              and station_user and station_user["id"] == station["id"] %}
                                                 <span><a href="#" onclick="unlock_station('{{ user_data["id"] }}', '{{ station["id"] }}')"
-                                                         class="text-warning ms-3" data-toggle="tooltip"
+                                                         class="text-info ms-3" data-toggle="tooltip"
                                                          title="Desbloquear"
                                                          data-original-title="Message"><i
-                                                        class="fa fa-solid fa-unlock"></i></a>
+                                                        class="fa fa-solid fa-unlock">  Desbloquear</i></a>
                                                 </span>
                                             {% endif %}
                                             {% if station["state"]["value"] == "LIBRE" and user_data["state"]["value"] == "OCUPADO" %}
                                                 <span><a href="#" onclick="lock_station('{{ user_data["id"] }}', '{{ station["id"] }}')"
                                                          class="text-danger ms-3" data-toggle="tooltip" title="Bloquear"
                                                          data-original-title="Message"><i
-                                                        class="fa fa-solid fa-lock"></i></a>
+                                                        class="fa fa-solid fa-lock">  Bloquear</i></a>
                                                 </span>
                                             {% endif %}
                                         </td>

@@ -98,6 +98,16 @@ def get_all_stations():
     else:
         return None
 
+def get_all_stations_quantumleap():
+    url = 'http://' + ORION_HOST + ':8668/v2/entities?type=Station'
+    response = requests.get(url)
+    response.encoding = 'utf-8'
+    if response.ok:
+        data = response.json()
+        return data
+    else:
+        return None
+
 def get_all_bikes():
     url = 'http://' + ORION_HOST + ':1026/v2/entities?type=Bike'
     response = requests.get(url)

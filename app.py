@@ -107,8 +107,8 @@ def home():
         return redirect("/login")
     data_user = queries.get_info_user(session["username"])
     station_user = None
-    if "id_station" in data_user and data_user["id_station"]:
-        station_user = queries.get_info_station(data_user["id_station"])
+    if "id_station" in data_user and data_user["id_station"]["value"]:
+        station_user = queries.get_info_station(data_user["id_station"]["value"])
     station_entities = queries.get_all_stations()
     bikes_entities = queries.get_all_bikes()
     return render_template("home.html", user_data=data_user, station_user=station_user, station_entities=station_entities, bikes_entities=bikes_entities)
@@ -122,8 +122,21 @@ def stations():
     if "id_station" in data_user and data_user["id_station"]["value"]:
         station_user = queries.get_info_station(data_user["id_station"]["value"])
     station_entities = queries.get_all_stations()
+    station_entities_quantum = queries.get_all_stations_quantumleap()
     bikes_entities = queries.get_all_bikes()
-    return render_template("stations.html", user_data=data_user, station_user=station_user, station_entities=station_entities, bikes_entities=bikes_entities)
+    return render_template("stations.html", user_data=data_user, station_user=station_user, station_entities=station_entities, station_entities_quantum=station_entities_quantum, bikes_entities=bikes_entities)
+
+@app.route('/bikes', methods=["GET"])
+def bikes():
+    if not is_logged():
+        return redirect("/login")
+    data_user = queries.get_info_user(session["username"])
+    station_user = None
+    if "id_station" in data_user and data_user["id_station"]["value"]:
+        station_user = queries.get_info_station(data_user["id_station"]["value"])
+    station_entities = queries.get_all_stations()
+    bikes_entities = queries.get_all_bikes()
+    return render_template("bikes.html", user_data=data_user, station_user=station_user, station_entities=station_entities,  bikes_entities=bikes_entities)
 
 
 # API REQUESTS

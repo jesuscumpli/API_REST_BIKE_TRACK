@@ -21,8 +21,8 @@
     <nav class="navbar navbar-expand-lg navbar-dark gradient-bg-theme">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-{#                <img src="/static/images/ravenloop.png" height="30"#}
-{#                     class="d-inline-block align-top mx-3" alt="logo">#}
+                {#                <img src="/static/images/ravenloop.png" height="30"#}
+                {#                     class="d-inline-block align-top mx-3" alt="logo">#}
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -49,6 +49,25 @@
                             Username: {{ session["username"] }}
                         </span>
                     </li>
+                    <li class="nav-item mx-3">
+                        <span class="navbar-text">
+                            Estado: {{ user_data["state"]["value"] }}
+                        </span>
+                    </li>
+                    {% if user_data["state"]["value"] == "RESERVADO" %}
+                        <li class="nav-item mx-3">
+                        <span class="navbar-text">
+                            Estación: {{ user_data["id_station"]["value"] }}
+                        </span>
+                        </li>
+                    {% endif %}
+                    {% if user_data["state"]["value"] == "OCUPADO" %}
+                        <li class="nav-item mx-3">
+                        <span class="navbar-text">
+                            Bicicleta: {{ user_data["id_bike"]["value"] }}
+                        </span>
+                        </li>
+                    {% endif %}
                     <li class="nav-item mx-3">
                         <a class="nav-link btn btn-danger" href="/logout">Logout</a>
                     </li>
