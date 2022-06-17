@@ -5,7 +5,7 @@ ORION_HOST = os.getenv('ORION_HOST', 'localhost')
 QUANTUMLEAP_HOST = os.getenv('QUANTUMLEAP_HOST', 'localhost')
 
 def get_state_station(id_station):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '?type=Station'
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '?type=Station'
     response = requests.get(url)
     if response.ok:
         response.encoding = 'utf-8'
@@ -15,7 +15,7 @@ def get_state_station(id_station):
     return None
 
 def get_bike_from_station(id_station):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '?type=Station'
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '?type=Station'
     response = requests.get(url)
     if response.ok:
         response.encoding = 'utf-8'
@@ -24,8 +24,8 @@ def get_bike_from_station(id_station):
         return id_bike
     return None
 
-def get_bike_from_user(id_user):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '?type=User'
+def get_bike_from_user_by_id(id_user):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_user + '?type=User'
     response = requests.get(url)
     if response.ok:
         response.encoding = 'utf-8'
@@ -34,8 +34,8 @@ def get_bike_from_user(id_user):
         return id_bike
     return None
 
-def get_state_user(id_user):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '?type=User'
+def get_state_user_by_id(id_user):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_user + '?type=User'
     response = requests.get(url)
     if response.ok:
         response.encoding = 'utf-8'
@@ -44,8 +44,8 @@ def get_state_user(id_user):
         return state
     return None
 
-def user_exists(id_user):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '?type=User'
+def user_exists(username):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + username + '?type=User'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:
@@ -57,8 +57,8 @@ def user_exists(id_user):
     else:
         return False
 
-def get_password_user(id_user):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '?type=User'
+def get_password_user(username):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + username + '?type=User'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:
@@ -68,24 +68,18 @@ def get_password_user(id_user):
     else:
         return None
 
-def get_info_user(id_user):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '?type=User'
+def get_info_user(username):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + username + '?type=User'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:
         data = response.json()
-        info = {}
-        info["username"] = data["username"]["value"]
-        info["id_bike"] = data["id_bike"]["value"]
-        info["id_station"] = data["id_station"]["value"]
-        info["state"] = data["state"]["value"]
-        info["tag_rfid"] = data["tag_rfid"]["value"]
-        return info
+        return data
     else:
         return None
 
 def get_info_station(id_station):
-    url = 'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '?type=Station'
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '?type=Station'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:

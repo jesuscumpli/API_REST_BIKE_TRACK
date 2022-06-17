@@ -11,11 +11,11 @@ import queries
 ORION_HOST = os.getenv('ORION_HOST', 'localhost')
 
 
-def create_user(username, password, tag_rfid):
+def create_user(id_user, username, password, tag_rfid):
     try:
         hash_pass = hashlib.sha256(password.encode()).hexdigest()
         json_user = {
-            "id": "urn:ngsi-ld:User:" + username,
+            "id": id_user,
             "type": "User",
             "username": {"type": "Text", "value": username},
             "password": {"type": "Text", "value": hash_pass},
@@ -43,7 +43,7 @@ def create_user(username, password, tag_rfid):
 def create_station(id, name, latitude, longitude):
     try:
         json_station = {
-            "id": "urn:ngsi-ld:Station:" + id,
+            "id": id,
             "type": "Station",
             "state": {"type": "Text", "value": "LIBRE"},  # DISPONIBLE / RESERVADO / LIBRE
             "location": {
@@ -92,13 +92,13 @@ def create_bike(id, price, category, id_station):
         }
         newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.post(
-            'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+            'http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '/attrs',
             data=json.dumps(json_station_update), headers=newHeaders)
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
         json_bike = {
-            "id": "urn:ngsi-ld:Bike:" + id,
+            "id": id,
             "type": "Bike",
             "category": {"type": "Text", "value": category},
             "price": {"type": "Text", "value": price},
@@ -158,37 +158,41 @@ if __name__ == '__main__':
     response = create_subscription_QuantumLeap()
 
     # CREATE SOME USERS
-    username = "Jesus"
+    username = "jesus"
+    id_user = "urn:ngsi-ld:User:" + username
     password = "admin"
     tag_rfid = "TAG1"  # Sustituir por tu tag
-    response = create_user(username, password, tag_rfid)
+    response = create_user(id_user, username, password, tag_rfid)
 
-    username = "Ismael"
+    username = "ismael"
+    id_user = "urn:ngsi-ld:User:" + username
     password = "admin"
     tag_rfid = "TAG2"  # Sustituir por tu tag
-    response = create_user(username, password, tag_rfid)
+    response = create_user(id_user, username, password, tag_rfid)
 
     username = "admin"
+    id_user = "urn:ngsi-ld:User:" + username
     password = "admin"
     tag_rfid = "TAG3"  # Sustituir por tu tag
-    response = create_user(username, password, tag_rfid)
+    response = create_user(id_user, username, password, tag_rfid)
 
     # Create some stations
     id_stations = []
     for i in range(20):
-        id = str(i)
+        id = "urn:ngsi-ld:Station:" + str(i)
         id_stations.append(id)
-        name = "Estación: " + str(id)
+        name = "Estación: " + str(i)
         latitude = random.random() * 50
         longitude = random.random() * 50
         response = create_station(id, name, latitude, longitude)
 
     # Create some bikes
     for i in range(30):
-        id = str(i)
+        id = "urn:ngsi-ld:Bike:" + str(i)
         price = str(random.random() * 3)
         category = random.choice(["electric", "manual"])
         id_station = random.choice(id_stations)
         response = create_bike(id, price, category, id_station)
+        print(response)
 
     print("success!!")

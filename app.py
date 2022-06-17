@@ -113,6 +113,19 @@ def home():
     bikes_entities = queries.get_all_bikes()
     return render_template("home.html", user_data=data_user, station_user=station_user, station_entities=station_entities, bikes_entities=bikes_entities)
 
+@app.route('/stations', methods=["GET"])
+def stations():
+    if not is_logged():
+        return redirect("/login")
+    data_user = queries.get_info_user(session["username"])
+    station_user = None
+    if "id_station" in data_user and data_user["id_station"]["value"]:
+        station_user = queries.get_info_station(data_user["id_station"]["value"])
+    station_entities = queries.get_all_stations()
+    bikes_entities = queries.get_all_bikes()
+    return render_template("stations.html", user_data=data_user, station_user=station_user, station_entities=station_entities, bikes_entities=bikes_entities)
+
+
 # API REQUESTS
 
 @app.route('/api/entities/user', methods=["POST"])
@@ -215,7 +228,7 @@ def create_bike():
         }
         newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
         response = requests.post(
-            'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+            'http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '/attrs',
             data=json.dumps(json_station_update), headers=newHeaders)
         if int(response.status_code) >= 400:
             raise Exception(response.text)
@@ -259,7 +272,7 @@ def user_lock_station():
         id_station = data["id_station"]
 
         # Check user is OCUPADO
-        state_user = queries.get_state_user(id_user)
+        state_user = queries.get_state_user_by_id(id_user)
         if state_user != "OCUPADO":
             raise Exception("Usuario no esta Ocupado!")
         # Check station is LIBRE
@@ -268,7 +281,7 @@ def user_lock_station():
             raise Exception("La estacion no esta Libre!")
 
         # Get id_bike
-        id_bike = queries.get_bike_from_user(id_user)
+        id_bike = queries.get_bike_from_user_by_id(id_user)
 
         response = lock_user(id_user)
         if int(response.status_code) >= 400:
@@ -294,7 +307,7 @@ def user_book_station():
         id_station = data["id_station"]
 
         # Check user is DISPONIBLE
-        state_user = queries.get_state_user(id_user)
+        state_user = queries.get_state_user_by_id(id_user)
         if state_user != "DISPONIBLE":
             raise Exception("Usuario no esta Disponible!")
         # Check station is DISPONIBLE
@@ -329,7 +342,7 @@ def user_unlock_station():
         id_station = data["id_station"]
 
         # Check user is RESERVADO
-        state_user = queries.get_state_user(id_user)
+        state_user = queries.get_state_user_by_id(id_user)
         if state_user != "RESERVADO":
             raise Exception("Usuario no esta Reservado!")
         # Check station is RESERVADO
@@ -366,7 +379,7 @@ def lock_station(id_station, id_bike):
         "id_bike": {"value": id_bike},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '/attrs',
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
@@ -378,7 +391,7 @@ def lock_bike(id_bike, id_station):
         "id_user": {"value": None},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
 
@@ -390,7 +403,7 @@ def lock_user(id_user):
         "id_station": {"value": None},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_user + '/attrs',
                              data=json.dumps(json_user_update), headers=newHeaders)
     return response
 
@@ -401,7 +414,7 @@ def book_station(id_station, id_user):
         "id_user": {"value": id_user},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '/attrs',
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
@@ -412,7 +425,7 @@ def book_bike(id_bike, id_user):
         "id_user": {"value": id_user},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
 
@@ -424,7 +437,7 @@ def book_user(id_user, id_station, id_bike):
         "id_bike": {"value": id_bike},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_user + '/attrs',
                              data=json.dumps(json_user_update), headers=newHeaders)
     return response
 
@@ -436,7 +449,7 @@ def unlock_station(id_station):
         "id_user": {"value": None},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_station + '/attrs',
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
@@ -447,7 +460,7 @@ def unlock_bike(id_bike):
         "id_station": {"value": None},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
 
@@ -458,7 +471,7 @@ def unlock_user(id_user):
         "id_station": {"value": None},
     }
     newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:User:' + id_user + '/attrs',
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/' + id_user + '/attrs',
                              data=json.dumps(json_user_update), headers=newHeaders)
     return response
 
