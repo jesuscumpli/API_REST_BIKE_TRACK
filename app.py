@@ -1,6 +1,6 @@
 import hashlib
 
-from flask import Flask, request
+from flask import Flask, request, jsonify, redirect, session, flash, render_template
 import requests
 import json
 import os
@@ -8,9 +8,114 @@ import queries
 
 ORION_HOST = os.getenv('ORION_HOST', 'localhost')
 app = Flask(__name__)
+app.secret_key = '6ee9a71761572d9f91dc2067da170889'
 
 
-@app.route('/api/entities/user', methods="POST")
+# VIEWS
+
+def is_logged():
+    username = session.get("username")
+    if username is None:
+        return False
+    return True
+
+@app.route('/')
+def index():
+    if not is_logged():
+        return redirect("/login")
+    return redirect("/home")
+
+@app.route('/logout', methods=["GET"])
+def logout():
+    session["username"] = None
+    return redirect("/login")
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        form = request.form
+        username = form.get("username")
+        password = form.get("password")
+        # Check data
+        if username is None:
+            flash("Nombre de usuario no definido")
+        elif password is None:
+            flash("Contraseña no definida")
+        elif not queries.user_exists(username):
+            flash("Usuario no existe")
+        else:
+            password_hashed = hashlib.sha256(password.encode()).hexdigest()
+            real_password = queries.get_password_user(username)
+            if password_hashed == real_password:
+                # Starts session
+                session["username"] = username
+                return redirect("/home")
+            else:
+                flash("Los datos introducidos son incorrectos.")
+    return render_template("login.html")
+
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        form = request.form
+        username = form.get("username")
+        password1 = form.get("password1")
+        password2 = form.get("password2")
+        tag_rfid = form.get("tag_rfid")
+
+        # Check data
+        if username is None:
+            flash("Nombre de usuario no definido")
+        elif password1 is None or password2 is None:
+            flash("Contraseña no definida")
+        elif password1 != password2:
+            flash("Las contraseñas no coinciden")
+        elif tag_rfid is None:
+            flash("TAG RFID no definido")
+        elif queries.user_exists(username):
+            flash("Usuario ya existe")
+        else:
+            # Create user
+            password_hashed = hashlib.sha256(password1.encode()).hexdigest()
+            json_user = {
+                "id": "urn:ngsi-ld:User:" + username,
+                "type": "User",
+                "username": {"type": "Text", "value": username},
+                "password": {"type": "Text", "value": password_hashed},
+                "tag_rfid": {"type": "Text", "value": tag_rfid},
+                "state": {"type": "Text", "value": "DISPONIBLE"},  # DISPONIBLE / RESERVADO / OCUPADO
+                "id_station": {"type": "Text", "value": None},  # ID ESTACION RESERVADA
+                "id_bike": {"type": "Text", "value": None},  # ID BIKE RESERVADA / OCUPADA
+            }
+            newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
+            response = requests.post('http://' + ORION_HOST + ':1026/v2/entities',
+                                     data=json.dumps(json_user),
+                                     headers=newHeaders)
+            print("Status code: ", response.status_code)
+            print(response.text)
+            if int(response.status_code) >= 400:
+                raise Exception(response.text)
+
+            # Register Success
+            session["username"] = username
+            return redirect("/home")
+    return render_template("register.html")
+
+@app.route('/home', methods=["GET"])
+def home():
+    if not is_logged():
+        return redirect("/login")
+    data_user = queries.get_info_user(session["username"])
+    station_user = None
+    if "id_station" in data_user and data_user["id_station"]:
+        station_user = queries.get_info_station(data_user["id_station"])
+    station_entities = queries.get_all_stations()
+    bikes_entities = queries.get_all_bikes()
+    return render_template("home.html", user_data=data_user, station_user=station_user, station_entities=station_entities, bikes_entities=bikes_entities)
+
+# API REQUESTS
+
+@app.route('/api/entities/user', methods=["POST"])
 def create_user():
     data = request.get_json()
     try:
@@ -37,12 +142,14 @@ def create_user():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": 200, "msg": "User created"}
+        response = {"status": 200, "msg": "User created"}
+        return jsonify(response)
     except Exception as e:
-        return {'status': 400, "msg": str(e)}
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
 
-@app.route('/api/entities/station', methods="POST")
+@app.route('/api/entities/station', methods=["POST"])
 def create_station():
     data = request.get_json()
     try:
@@ -83,12 +190,13 @@ def create_station():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": 200, "msg": "Station created!"}
+        return jsonify({"status": 200, "msg": "Station created!"})
     except Exception as e:
-        return {"status": 400, "msg": str(e)}
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
 
-@app.route('/api/entities/bike', methods="POST")
+@app.route('/api/entities/bike', methods=["POST"])
 def create_bike():
     data = request.get_json()
     try:
@@ -106,8 +214,9 @@ def create_bike():
             "id_bike": {"value": id},
         }
         newHeaders = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:'+id_station+'/attrs',
-                                 data=json.dumps(json_station_update), headers=newHeaders)
+        response = requests.post(
+            'http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Station:' + id_station + '/attrs',
+            data=json.dumps(json_station_update), headers=newHeaders)
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
@@ -136,12 +245,13 @@ def create_bike():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": 200, "msg": "Bike created!"}
+        return jsonify({"status": 200, "msg": "Bike created!"})
     except Exception as e:
-        return {"status": 400, "msg": str(e)}
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
 
-@app.route('/user_lock_station', methods="POST")
+@app.route('/user_lock_station', methods=["POST"])
 def user_lock_station():
     try:
         data = request.get_json()
@@ -170,11 +280,13 @@ def user_lock_station():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": "200", "msg": "Bloqueado con éxito!"}
+        return jsonify({"status": "200", "msg": "Bloqueado con éxito!"})
     except Exception as e:
-        return {"status": "400", "msg": str(e)}
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
-@app.route('/user_book_station', methods="POST")
+
+@app.route('/user_book_station', methods=["POST"])
 def user_book_station():
     try:
         data = request.get_json()
@@ -203,11 +315,13 @@ def user_book_station():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": "200", "msg": "Reservado con éxito!"}
+        return jsonify({"status": "200", "msg": "Reservado con éxito!"})
     except Exception as e:
-        return {"status": "400", "msg": str(e)}
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
-@app.route('/user_unlock_station', methods="POST")
+
+@app.route('/user_unlock_station', methods=["POST"])
 def user_unlock_station():
     try:
         data = request.get_json()
@@ -236,13 +350,10 @@ def user_unlock_station():
         if int(response.status_code) >= 400:
             raise Exception(response.text)
 
-        return {"status": "200", "msg": "Desbloqueado con éxito!"}
+        return jsonify({"status": "200", "msg": "Desbloqueado con éxito!"})
     except Exception as e:
-        return {"status": "400", "msg": str(e)}
-
-
-
-
+        response = {'status': 400, "msg": str(e)}
+        return jsonify(response)
 
 
 # METODOS PRIVADOS
@@ -259,6 +370,7 @@ def lock_station(id_station, id_bike):
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
+
 def lock_bike(id_bike, id_station):
     json_bike_update = {
         "state": {"value": "DISPONIBLE"},
@@ -269,6 +381,7 @@ def lock_bike(id_bike, id_station):
     response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
+
 
 def lock_user(id_user):
     json_user_update = {
@@ -292,6 +405,7 @@ def book_station(id_station, id_user):
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
+
 def book_bike(id_bike, id_user):
     json_bike_update = {
         "state": {"value": "RESERVADO"},
@@ -301,6 +415,7 @@ def book_bike(id_bike, id_user):
     response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
+
 
 def book_user(id_user, id_station, id_bike):
     json_user_update = {
@@ -313,6 +428,7 @@ def book_user(id_user, id_station, id_bike):
                              data=json.dumps(json_user_update), headers=newHeaders)
     return response
 
+
 def unlock_station(id_station):
     json_station_update = {
         "state": {"value": "LIBRE"},
@@ -324,6 +440,7 @@ def unlock_station(id_station):
                              data=json.dumps(json_station_update), headers=newHeaders)
     return response
 
+
 def unlock_bike(id_bike):
     json_bike_update = {
         "state": {"value": "OCUPADO"},
@@ -333,6 +450,7 @@ def unlock_bike(id_bike):
     response = requests.post('http://' + ORION_HOST + ':1026/v2/entities/urn:ngsi-ld:Bike:' + id_bike + '/attrs',
                              data=json.dumps(json_bike_update), headers=newHeaders)
     return response
+
 
 def unlock_user(id_user):
     json_user_update = {

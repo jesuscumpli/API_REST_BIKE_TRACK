@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename="css/login.css") }}"/>
+{% endblock %}
+
+{% block header %}
+{% endblock %}
+
+{% block body %}
+
+    <section class="h-100">
+		<div class="container h-100">
+			<div class="row justify-content-sm-center h-100">
+				<div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
+					<div class="text-center my-5">
+{#						<img src="static/images/ravenloop.png" alt="logo" width="350">#}
+					</div>
+					<div class="card shadow-lg">
+						<div class="card-body p-5">
+
+							<h1 class="fs-4 card-title fw-bold mb-4">Inicio de Sesión</h1>
+
+							<form method="POST" action="/login">
+                                {% for message in get_flashed_messages() %}
+                                    <div class="alert alert-danger">{{ message }}</div>
+                                {% endfor %}
+
+								<div class="mb-3">
+									<label class="mb-2 text-muted" for="username">Username</label>
+									<input id="username" class="form-control" name="username" required autofocus>
+								</div>
+
+								<div class="mb-3">
+                                    <label class="text-muted" for="password">Contraseña</label>
+									<input id="password" type="password" class="form-control" name="password" required>
+								</div>
+
+                                <button type="submit" class="btn ms-auto w-100" id="loginButton">
+                                    Iniciar sesión
+                                </button>
+							</form>
+						</div>
+						<div class="card-footer py-3 border-0">
+							<div class="text-center">
+								¿No tienes aún una cuenta? <a href="/register" class="text-dark">Registrarse</a>
+							</div>
+						</div>
+					</div>
+					<div class="text-center mt-5 text-muted">
+						Developed by Jesús Cumplido and Ismael Gómez
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+{% endblock %}

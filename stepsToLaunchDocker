@@ -1,2 +1,8 @@
+1.
 sudo sysctl -w vm.max_map_count=262144
+2.
 docker-compose up mongo-db orion crate-db quantumleap grafana
+3.
+python initialization.py
+4.
+python app.py
