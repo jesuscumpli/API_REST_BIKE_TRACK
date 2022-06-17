@@ -133,14 +133,14 @@ def create_subscription_QuantumLeap():
     json_dict = {
         "description": "Notify QuantumLeap of all context changes",
         "subject": {
-            "entities": [{"idPattern": "^urn:ngsi-ld:Station:[1-100]"}, {"idPattern": "^urn:ngsi-ld:Bike:[1-100]"}, {"idPattern": "^urn:ngsi-ld:User:*"}]
+            "entities": [{"idPattern": "^urn:ngsi-ld:Station:*"}, {"idPattern": "^urn:ngsi-ld:Bike:*"}, {"idPattern": "^urn:ngsi-ld:User:*"}]
         },
         "notification": {
             "http": {
                 "url": "http://quantumleap:8668/v2/notify"
             },
             "attrs": [
-                "id_station", "state", "name", "id_user", "id_bike", "location"
+                "username", "category", "price", "id_station", "state", "name", "id_user", "id_bike", "location"
             ],
             "metadata": ["dateCreated", "dateModified"]
         },
@@ -178,16 +178,16 @@ if __name__ == '__main__':
 
     # Create some stations
     id_stations = []
-    for i in range(20):
+    for i in range(40):
         id = "urn:ngsi-ld:Station:" + str(i)
         id_stations.append(id)
         name = "Estación: " + str(i)
-        latitude = random.random() * 50
-        longitude = random.random() * 50
+        latitude = 36.719444 + random.random() * 1.25
+        longitude = -4.42 + random.random() * 1.25
         response = create_station(id, name, latitude, longitude)
 
     # Create some bikes
-    for i in range(30):
+    for i in range(20):
         id = "urn:ngsi-ld:Bike:" + str(i)
         price = str(random.random() * 3)
         category = random.choice(["electric", "manual"])
