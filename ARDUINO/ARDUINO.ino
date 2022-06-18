@@ -2,6 +2,7 @@
 #include <String.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include <ESP8266WiFi.h>
 
 //BLUETOOTH PINS
 #define PIN_TX_BT D4
@@ -40,6 +41,10 @@ MFRC522 rfid(PIN_SDA, PIN_RST); // Instance of the class
 MFRC522::MIFARE_Key key;
 byte nuidPICC[4];
 
+//WIFI variables
+const char* ssid = "vodafone07B0";
+const char* password = "H8QCKYATYR4CKK";
+
 void setup() {
   pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
@@ -60,7 +65,16 @@ void setup() {
    for (byte i = 0; i < 6; i++) {
      key.keyByte[i] = 0xFF;
    }
-   
+
+   //WIFI
+   Serial.printf("\nConnecting to %s:\n", ssid);
+   WiFi.mode(WIFI_STA);
+   WiFi.begin(ssid, password);
+   while (WiFi.status() != WL_CONNECTED) {
+    delay(200);
+    Serial.print(".");
+   }
+   Serial.printf("\nWiFi connected, IP address: %s\n", WiFi.localIP().toString().c_str());
 }
 
 void loop() {
