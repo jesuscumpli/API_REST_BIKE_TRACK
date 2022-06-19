@@ -17,10 +17,36 @@
                     <div class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm">
                         <h3>Mapa</h3>
 
+                        {% for message in get_flashed_messages() %}
+                            <div class="alert alert-info">{{ message }}</div>
+                        {% endfor %}
+
+                        <div id="map"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function refreshMap() {
+            var urlMap = "/api/map/stations"
+            $.ajax({
+                type: 'GET',
+                url: urlMap,
+                success: (data, status, xhr) => {
+                    document.getElementById("map").innerHTML = data;
+                },
+                error: (xhr, errorType, error) => {
+                    console.error("Error generating the map")
+                },
+            });
+        }
+
+        $(document).ready(function () {
+            refreshMap();
+        });
+
+    </script>
 
 {% endblock %}

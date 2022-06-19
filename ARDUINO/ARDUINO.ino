@@ -3,6 +3,9 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+#include <ArduinoJson.h>
 
 //BLUETOOTH PINS
 #define PIN_TX_BT D4
@@ -17,6 +20,19 @@
 
 #define PIN_LED D2
 #define PIN_BUZZER D1
+
+
+// CONSTANTES DE LA ESTACION
+#define ID_STATION "urn:ngsi-ld:Station:MyStationJesus2"
+#define NAME_STATION "MyStationJesus"
+#define LATITUDE 36.721182
+#define LONGITUDE -4.474272
+// VARIABLES DE LA ESTACION
+String state = "LIBRE";
+String id_bike = "None";
+String id_user = "None";
+int lastUpdate = 0;
+int timeUpdate = 1000*5;
 
 
 // Bluetooth variables
@@ -42,8 +58,10 @@ MFRC522::MIFARE_Key key;
 byte nuidPICC[4];
 
 //WIFI variables
-const char* ssid = "vodafone07B0";
-const char* password = "H8QCKYATYR4CKK";
+const char* ssid = "FTE-9480";
+const char* password = "REYES2020";
+//API REQUESTS
+String serverName = "http://192.168.1.138:5000";
 
 void setup() {
   pinMode(PIN_LED, OUTPUT);
@@ -54,8 +72,8 @@ void setup() {
 
   //BLUETOOTH
   BT1.begin(9600);
-  BT1.print("AT+NAMEJesusIsmaelBLEDevice\n");
-  BT1.print("AT+PIN1234\n");
+  //BT1.print("AT+NAMEJesusIsmaelBLEDevice\n");
+  //BT1.print("AT+PIN1234\n");
 
   //RFID
   SPI.begin(); // Init SPI bus
@@ -75,10 +93,14 @@ void setup() {
     Serial.print(".");
    }
    Serial.printf("\nWiFi connected, IP address: %s\n", WiFi.localIP().toString().c_str());
+
+   POST_create_entity_station();
+   
 }
 
 void loop() {
   unsigned long now = millis();
+  GET_info_station(now);
   sound_buzzer(now);
   listen_card_RFID(now);
   listen_commands_bluetooth(now);
@@ -203,6 +225,85 @@ void listen_commands_bluetooth(int now){
       Serial.write("\n");
     }
     BT1.flush();
+  }
+}
+
+void POST_create_entity_station(){
+  //Check WiFi connection status
+    if(WiFi.status()== WL_CONNECTED){
+      WiFiClient client;
+      HTTPClient http;
+      http.begin(client, serverName + "/api/entities/station");
+      http.addHeader("Content-Type", "application/json");
+      
+      // Data to send with HTTP POST
+      StaticJsonDocument<400> data;
+      data["id"] = ID_STATION;
+      data["name"] = NAME_STATION;
+      data["latitude"] = LATITUDE;
+      data["longitude"] = LONGITUDE;
+      String requestBody;
+      serializeJson(data, requestBody);
+      
+      int httpResponseCode = http.POST(requestBody);
+      String payload = http.getString();
+      StaticJsonDocument<200> response;
+      deserializeJson(response, payload);
+      String status_response = response["status"];
+      String msg_response = response["msg"];
+      Serial.print("HTTP Response code: ");
+      Serial.println(status_response);
+      Serial.println(msg_response);
+        
+      // Free resources
+      http.end();
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+}
+
+void GET_info_station(int now){
+  if(now > lastUpdate + timeUpdate){
+    lastUpdate = now;
+    
+    //Check WiFi connection status
+      if(WiFi.status()== WL_CONNECTED){
+        WiFiClient client;
+        HTTPClient http;
+  
+        Serial.println("GET INFO STATION");
+        http.begin(client, serverName + "/api/entities/station/info/" + ID_STATION);
+        int httpResponseCode = http.GET();
+        
+        String payload = http.getString();
+        StaticJsonDocument<1000> response;
+        deserializeJson(response, payload);
+        String status_response = response["status"];
+        if(status_response == "200"){
+          
+          state = (const char*) response["data"]["state"]["value"];
+          Serial.print("State: ");
+          Serial.println(state);
+          id_user = (const char*) response["data"]["id_user"]["value"];
+          Serial.print("Id User: ");
+          Serial.println(id_user);
+          id_bike = (const char*) response["data"]["id_bike"]["value"];
+          Serial.print("Id Bike: ");
+          Serial.println(id_bike);
+        }else{
+          String msg_response = response["data"];
+          Serial.print("HTTP Response code: ");
+          Serial.println(status_response);
+          Serial.println(msg_response);
+        }
+          
+        // Free resources
+        http.end();
+      }
+      else {
+        Serial.println("WiFi Disconnected");
+      }
   }
 }
 

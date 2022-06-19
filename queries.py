@@ -89,7 +89,7 @@ def get_info_station(id_station):
         return None
 
 def get_all_stations():
-    url = 'http://' + ORION_HOST + ':1026/v2/entities?type=Station'
+    url = 'http://' + ORION_HOST + ':1026/v2/entities?type=Station&limit=100'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:
@@ -99,7 +99,7 @@ def get_all_stations():
         return None
 
 def get_all_stations_quantumleap():
-    url = 'http://' + ORION_HOST + ':8668/v2/entities?type=Station'
+    url = 'http://' + ORION_HOST + ':8668/v2/entities?type=Station&limit=100'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:
@@ -110,6 +110,16 @@ def get_all_stations_quantumleap():
 
 def get_all_bikes():
     url = 'http://' + ORION_HOST + ':1026/v2/entities?type=Bike'
+    response = requests.get(url)
+    response.encoding = 'utf-8'
+    if response.ok:
+        data = response.json()
+        return data
+    else:
+        return None
+
+def get_info_bike(id_bike):
+    url = 'http://' + ORION_HOST + ':1026/v2/entities/' + id_bike + '?type=Bike'
     response = requests.get(url)
     response.encoding = 'utf-8'
     if response.ok:

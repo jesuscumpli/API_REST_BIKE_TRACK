@@ -156,7 +156,7 @@ def create_subscription_QuantumLeap():
 
 if __name__ == '__main__':
     response = create_subscription_QuantumLeap()
-
+    exit()
     # CREATE SOME USERS
     username = "jesus"
     id_user = "urn:ngsi-ld:User:" + username
@@ -182,8 +182,10 @@ if __name__ == '__main__':
         id = "urn:ngsi-ld:Station:" + str(i)
         id_stations.append(id)
         name = "Estación: " + str(i)
-        latitude = 36.719444 + random.random() * 1.25
-        longitude = -4.42 + random.random() * 1.25
+        negative = random.choice([-1, 1])
+        latitude = 36.719444 + random.random() * 0.035 * negative
+        negative = random.choice([-1, 1])
+        longitude = -4.42 + random.random() * 0.035 * negative
         response = create_station(id, name, latitude, longitude)
 
     # Create some bikes
