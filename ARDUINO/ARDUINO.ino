@@ -23,7 +23,7 @@
 
 
 // CONSTANTES DE LA ESTACION
-#define ID_STATION "urn:ngsi-ld:Station:MyStationJesus2"
+#define ID_STATION "urn:ngsi-ld:Station:MyStationJesus"
 #define NAME_STATION "MyStationJesus"
 #define LATITUDE 36.721182
 #define LONGITUDE -4.474272
@@ -280,7 +280,7 @@ void GET_info_station(int now){
         StaticJsonDocument<1000> response;
         deserializeJson(response, payload);
         String status_response = response["status"];
-        if(status_response == "200"){
+        if(status_response.equals("200")){
           
           state = (const char*) response["data"]["state"]["value"];
           Serial.print("State: ");

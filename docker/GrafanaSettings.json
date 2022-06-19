@@ -1,0 +1,740 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "circleMaxSize": "7",
+      "circleMinSize": "7",
+      "colors": [
+        "#5794F2",
+        "#C4162A",
+        "rgba(50, 172, 45, 0.97)"
+      ],
+      "decimals": 0,
+      "esGeoPoint": "geohash",
+      "esLocationName": "metric",
+      "esMetric": "state_float",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 123125,
+      "initialZoom": "12",
+      "locationData": "geohash",
+      "mapCenter": "custom",
+      "mapCenterLatitude": "36.719444",
+      "mapCenterLongitude": "-4.420000",
+      "maxDataPoints": 1,
+      "mouseWheelZoom": false,
+      "showLegend": false,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "metric",
+        "queryType": "geohash"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(time_index),\n  CONCAT(CONCAT(entity_id,  ' => '), state) AS \"metric\",\n  geohash(location_centroid) AS geohash,\n  state,\n  CASE\n    WHEN state = 'DISPONIBLE' THEN 0.0\n    WHEN state = 'RESERVADO' THEN 5.0\n    WHEN state = 'LIBRE' THEN 10.0\n  END AS state_float\nFROM\n  \"doc\".\"etstation\"\nORDER BY 1,2\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": "1,10",
+      "title": "Estado Actual de todas las Estaciones",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "valueName": "total"
+    },
+    {
+      "circleMaxSize": "7",
+      "circleMinSize": "7",
+      "colors": [
+        "#5794F2",
+        "#C4162A",
+        "rgba(50, 172, 45, 0.97)"
+      ],
+      "decimals": 0,
+      "esGeoPoint": "geohash",
+      "esLocationName": "metric",
+      "esMetric": "state_float",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 123126,
+      "initialZoom": "12",
+      "locationData": "geohash",
+      "mapCenter": "custom",
+      "mapCenterLatitude": "36.719444",
+      "mapCenterLongitude": "-4.420000",
+      "maxDataPoints": 1,
+      "mouseWheelZoom": false,
+      "showLegend": false,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "metric",
+        "queryType": "geohash"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(time_index),\n  CONCAT(CONCAT(entity_id,  ' => '), state) AS \"metric\",\n  geohash(location_centroid) AS geohash,\n  state,\n  CASE\n    WHEN state = 'DISPONIBLE' THEN 0.0\n    WHEN state = 'RESERVADO' THEN 5.0\n    WHEN state = 'LIBRE' THEN 10.0\n  END AS state_float\nFROM\n  \"doc\".\"etstation\"\nWHERE\n  $__timeFilter(time_index)\nORDER BY 1,2\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": "1,10",
+      "title": "Histórico: Estaciones modificadas (por tiempo)",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "valueName": "total"
+    },
+    {
+      "circleMaxSize": "7",
+      "circleMinSize": "7",
+      "colors": [
+        "#5794F2",
+        "#C4162A",
+        "rgba(50, 172, 45, 0.97)"
+      ],
+      "decimals": 0,
+      "esGeoPoint": "geohash",
+      "esLocationName": "metric",
+      "esMetric": "state_float",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 123127,
+      "initialZoom": "12",
+      "locationData": "geohash",
+      "mapCenter": "custom",
+      "mapCenterLatitude": "36.719444",
+      "mapCenterLongitude": "-4.420000",
+      "maxDataPoints": 1,
+      "mouseWheelZoom": false,
+      "showLegend": false,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "metric",
+        "queryType": "geohash"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(time_index),\n  CONCAT(CONCAT(entity_id,  ' => '), state) AS \"metric\",\n  geohash(location_centroid) AS geohash,\n  state,\n  CASE\n    WHEN state = 'DISPONIBLE' THEN 0.0\n    WHEN state = 'RESERVADO' THEN 5.0\n    WHEN state = 'LIBRE' THEN 10.0\n  END AS state_float\nFROM\n  \"doc\".\"etstation\"\nWHERE\n  $__timeFilter(time_index) AND\n  state = 'DISPONIBLE'\nORDER BY 1,2\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": "1,10",
+      "title": "Estaciones disponibles (por tiempo)",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "valueName": "total"
+    },
+    {
+      "circleMaxSize": "7",
+      "circleMinSize": "7",
+      "colors": [
+        "#5794F2",
+        "#C4162A",
+        "rgba(50, 172, 45, 0.97)"
+      ],
+      "decimals": 0,
+      "esGeoPoint": "geohash",
+      "esLocationName": "metric",
+      "esMetric": "state_float",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 20
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 123128,
+      "initialZoom": "12",
+      "locationData": "geohash",
+      "mapCenter": "custom",
+      "mapCenterLatitude": "36.719444",
+      "mapCenterLongitude": "-4.420000",
+      "maxDataPoints": 1,
+      "mouseWheelZoom": false,
+      "showLegend": false,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "metric",
+        "queryType": "geohash"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(time_index),\n  CONCAT(CONCAT(entity_id,  ' => '), state) AS \"metric\",\n  geohash(location_centroid) AS geohash,\n  state,\n  CASE\n    WHEN state = 'DISPONIBLE' THEN 0.0\n    WHEN state = 'RESERVADO' THEN 5.0\n    WHEN state = 'LIBRE' THEN 10.0\n  END AS state_float\nFROM\n  \"doc\".\"etstation\"\nWHERE\n  $__timeFilter(time_index) AND\n  state = 'RESERVADO'\nORDER BY 1,2\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": "1,10",
+      "title": "Estaciones reservadas (por tiempo)",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "valueName": "total"
+    },
+    {
+      "circleMaxSize": "7",
+      "circleMinSize": "7",
+      "colors": [
+        "#5794F2",
+        "#C4162A",
+        "rgba(50, 172, 45, 0.97)"
+      ],
+      "decimals": 0,
+      "esGeoPoint": "geohash",
+      "esLocationName": "metric",
+      "esMetric": "state_float",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 20
+      },
+      "hideEmpty": false,
+      "hideZero": false,
+      "id": 123129,
+      "initialZoom": "12",
+      "locationData": "geohash",
+      "mapCenter": "custom",
+      "mapCenterLatitude": "36.719444",
+      "mapCenterLongitude": "-4.420000",
+      "maxDataPoints": 1,
+      "mouseWheelZoom": false,
+      "showLegend": false,
+      "stickyLabels": true,
+      "tableQueryOptions": {
+        "geohashField": "geohash",
+        "latitudeField": "latitude",
+        "longitudeField": "longitude",
+        "metricField": "metric",
+        "queryType": "geohash"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__time(time_index),\n  CONCAT(CONCAT(entity_id,  ' => '), state) AS \"metric\",\n  geohash(location_centroid) AS geohash,\n  state,\n  CASE\n    WHEN state = 'DISPONIBLE' THEN 0.0\n    WHEN state = 'RESERVADO' THEN 5.0\n    WHEN state = 'LIBRE' THEN 10.0\n  END AS state_float\nFROM\n  \"doc\".\"etstation\"\nWHERE\n  $__timeFilter(time_index) AND\n  state = 'LIBRE'\nORDER BY 1,2\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "timeColumn": "time",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": "1,10",
+      "title": "Estaciones libre (por tiempo)",
+      "type": "grafana-worldmap-panel",
+      "unitPlural": "",
+      "unitSingle": "",
+      "valueName": "total"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 27
+      },
+      "id": 123131,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etuser\nWHERE\n  $__timeFilter(time_index)\nGROUP BY entity_id\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Uso de bicis por usuario (por tiempo)",
+      "type": "piechart"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 27
+      },
+      "id": 123132,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  category,\n  count(state) AS \"state\"\nFROM etbike\nWHERE\n  $__timeFilter(time_index)\nGROUP BY category\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Uso de bicis por categoría (por tiempo)",
+      "type": "piechart"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 27
+      },
+      "id": 123133,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etstation\nWHERE\n  $__timeFilter(time_index)\nGROUP BY entity_id\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Uso de estaciones (por tiempo)",
+      "type": "piechart"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 35,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": false,
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ],
+    "type": "timepicker"
+  },
+  "timezone": "browser",
+  "title": "Home",
+  "uid": "Yz6ErR3nz",
+  "version": 32,
+  "weekStart": ""
+}

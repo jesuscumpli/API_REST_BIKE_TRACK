@@ -130,17 +130,49 @@ def create_bike(id, price, category, id_station):
 
 def create_subscription_QuantumLeap():
     # Create subscription
-    json_dict = {
+    json_station = {
         "description": "Notify QuantumLeap of all context changes",
         "subject": {
-            "entities": [{"idPattern": "^urn:ngsi-ld:Station:*"}, {"idPattern": "^urn:ngsi-ld:Bike:*"}, {"idPattern": "^urn:ngsi-ld:User:*"}]
+            "entities": [{"idPattern": "^urn:ngsi-ld:Station:*"}]
         },
         "notification": {
             "http": {
                 "url": "http://quantumleap:8668/v2/notify"
             },
             "attrs": [
-                "username", "category", "price", "id_station", "state", "name", "id_user", "id_bike", "location"
+               "state", "name", "id_user", "id_bike", "location"
+            ],
+            "metadata": ["dateCreated", "dateModified"]
+        },
+        "throttling": 1
+    }
+    json_user = {
+        "description": "Notify QuantumLeap of all context changes",
+        "subject": {
+            "entities": [{"idPattern": "^urn:ngsi-ld:User:*"}]
+        },
+        "notification": {
+            "http": {
+                "url": "http://quantumleap:8668/v2/notify"
+            },
+            "attrs": [
+                "username", "id_station", "state", "id_bike"
+            ],
+            "metadata": ["dateCreated", "dateModified"]
+        },
+        "throttling": 1
+    }
+    json_bike = {
+        "description": "Notify QuantumLeap of all context changes",
+        "subject": {
+            "entities": [{"idPattern": "^urn:ngsi-ld:Bike:*"}]
+        },
+        "notification": {
+            "http": {
+                "url": "http://quantumleap:8668/v2/notify"
+            },
+            "attrs": [
+                "username", "category", "price", "id_station", "state", "id_user"
             ],
             "metadata": ["dateCreated", "dateModified"]
         },
@@ -148,7 +180,15 @@ def create_subscription_QuantumLeap():
     }
     newHeaders = {'Content-type': 'application/json'}
     response = requests.post('http://' + ORION_HOST + ':1026/v2/subscriptions',
-                             data=json.dumps(json_dict),
+                             data=json.dumps(json_station),
+                             headers=newHeaders)
+    print("Status code: ", response.status_code)
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/subscriptions',
+                             data=json.dumps(json_user),
+                             headers=newHeaders)
+    print("Status code: ", response.status_code)
+    response = requests.post('http://' + ORION_HOST + ':1026/v2/subscriptions',
+                             data=json.dumps(json_bike),
                              headers=newHeaders)
     print("Status code: ", response.status_code)
     return response

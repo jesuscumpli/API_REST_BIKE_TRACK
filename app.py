@@ -638,10 +638,9 @@ def map_stations():
                 </div>
                 ''',
                 tooltip=station["id"],
-                icon=folium.Icon(color="yellow", icon="fa-bicycle", prefix='fa')
+                icon=folium.Icon(color="orange", icon="fa-bicycle", prefix='fa')
             ).add_to(map)
-        elif station["state"]["value"] == "RESERVADO" and data_user["state"][
-            "value"] == "RESERVADO":
+        elif station["state"]["value"] == "RESERVADO":
             folium.Marker(
                 location=[station["location"]["value"]["coordinates"][1],
                           station["location"]["value"]["coordinates"][0]],
@@ -659,7 +658,7 @@ def map_stations():
                 </div>
                 ''',
                 tooltip=station["id"],
-                icon=folium.Icon(color="yellow", icon="fa-bicycle", prefix='fa')
+                icon=folium.Icon(color="red", icon="fa-bicycle", prefix='fa')
             ).add_to(map)
         elif station["state"]["value"] == "LIBRE" and data_user["state"][
             "value"] == "OCUPADO":
