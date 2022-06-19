@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 
 from flask import Flask, request, jsonify, redirect, session, flash, render_template
@@ -131,6 +132,16 @@ def stations():
         station_user = queries.get_info_station(data_user["id_station"]["value"])
     station_entities = queries.get_all_stations()
     station_entities_quantum = queries.get_all_stations_quantumleap()
+    for station in station_entities:
+        last_update = ""
+        for station_quantum in station_entities_quantum:
+            if station["id"] == station_quantum["id"]:
+                last_update = station_quantum["index"][0]
+                last_update = datetime.datetime.strptime(last_update, '%Y-%m-%dT%H:%M:%S.%f%z')
+                last_update = last_update + datetime.timedelta(hours=2)
+                last_update = last_update.strftime("%m/%d/%Y, %H:%M:%S")
+                break
+        station["last_update"] = last_update
     bikes_entities = queries.get_all_bikes()
     return render_template("stations.html", user_data=data_user, station_user=station_user,
                            station_entities=station_entities, station_entities_quantum=station_entities_quantum,

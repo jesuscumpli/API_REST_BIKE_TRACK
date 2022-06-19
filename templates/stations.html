@@ -27,6 +27,7 @@
                                     <th class="text-center">Estado</th>
                                     <th class="text-center">ID Bike</th>
                                     <th class="text-center">ID User</th>
+                                    <th class="text-center">Última actualización</th>
                                     <th class="action text-right">Acción</th>
                                 </tr>
                                 </thead>
@@ -66,6 +67,9 @@
                                         </td>
                                         <td class="text-center">
                                             <span>{{ station["id_user"]["value"] }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span>{{ station["last_update"] }}</span>
                                         </td>
                                         <td class="text-right">
                                             {% if station["state"]["value"] == "DISPONIBLE" and user_data["state"]["value"] == "DISPONIBLE" %}
