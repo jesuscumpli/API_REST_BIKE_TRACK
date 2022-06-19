@@ -504,17 +504,24 @@
     {
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -524,29 +531,18 @@
         "x": 8,
         "y": 27
       },
-      "id": 123132,
+      "id": 123134,
       "options": {
-        "displayLabels": [
-          "percent"
-        ],
-        "legend": {
-          "displayMode": "list",
-          "placement": "right",
-          "values": []
-        },
-        "pieType": "pie",
+        "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": [],
           "fields": "",
           "values": true
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
+      "pluginVersion": "8.4.5",
       "targets": [
         {
           "datasource": {
@@ -565,7 +561,7 @@
           ],
           "metricColumn": "entity_id",
           "rawQuery": true,
-          "rawSql": "SELECT\n  category,\n  count(state) AS \"state\"\nFROM etbike\nWHERE\n  $__timeFilter(time_index)\nGROUP BY category\nORDER BY 1,2",
+          "rawSql": "SELECT\n  category,\n  count(state) AS \"state\"\nFROM etbike\nGROUP BY category\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -595,7 +591,98 @@
         }
       ],
       "title": "Uso de bicis por categoría (por tiempo)",
-      "type": "piechart"
+      "type": "gauge"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 27
+      },
+      "id": 123133,
+      "options": {
+        "displayMode": "lcd",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etstation\nWHERE\n  $__timeFilter(time_index)\nGROUP BY entity_id\nORDER BY 2 desc\nlimit 5",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Top 5: Uso de estaciones (por tiempo)",
+      "type": "bargauge"
     },
     {
       "fieldConfig": {
@@ -617,10 +704,10 @@
       "gridPos": {
         "h": 8,
         "w": 8,
-        "x": 16,
-        "y": 27
+        "x": 0,
+        "y": 35
       },
-      "id": 123133,
+      "id": 123136,
       "options": {
         "displayLabels": [
           "percent"
@@ -661,7 +748,7 @@
           ],
           "metricColumn": "entity_id",
           "rawQuery": true,
-          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etstation\nWHERE\n  $__timeFilter(time_index)\nGROUP BY entity_id\nORDER BY 1,2",
+          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etuser\nWHERE\n  $__timeFilter(time_index)\nGROUP BY entity_id\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -690,8 +777,190 @@
           "where": []
         }
       ],
-      "title": "Uso de estaciones (por tiempo)",
+      "title": "Uso de bicis por usuario (por tiempo)",
       "type": "piechart"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 35
+      },
+      "id": 123132,
+      "options": {
+        "displayMode": "basic",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  category,\n  count(state) AS \"state\"\nFROM etbike\nGROUP BY category\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Histórico: Uso de bicis por categoría desde el inicio",
+      "type": "bargauge"
+    },
+    {
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 35
+      },
+      "id": 123137,
+      "options": {
+        "displayMode": "lcd",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "8.4.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "jvOHXg37z"
+          },
+          "format": "table",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "none"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "entity_id",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  entity_id,\n  count(state) AS \"state\"\nFROM etstation\nGROUP BY entity_id\nORDER BY 2 desc\nLIMIT 5",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "count"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "state"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "etuser",
+          "timeColumn": "time_index",
+          "where": []
+        }
+      ],
+      "title": "Top 5: Uso de estaciones (por tiempo)",
+      "type": "bargauge"
     }
   ],
   "refresh": false,
@@ -702,7 +971,7 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -735,6 +1004,6 @@
   "timezone": "browser",
   "title": "Home",
   "uid": "Yz6ErR3nz",
-  "version": 32,
+  "version": 37,
   "weekStart": ""
 }
