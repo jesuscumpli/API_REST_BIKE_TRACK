@@ -138,7 +138,6 @@ void sound_buzzer(int now){
           buzzerState = LOW;
         }
       }
-      Serial.println("Entra");
       digitalWrite(PIN_BUZZER, buzzerState);
     }
   }
