@@ -34,6 +34,34 @@ def logout():
     session["username"] = None
     return redirect("/login")
 
+@app.route('/api/entities/user/info/<username>', methods=["GET"])
+def info_user(username):
+    data = queries.get_info_user(username)
+    return {"status": 200, "data": data}
+
+@app.route('/api/autenticate', methods=["GET", "POST"])
+def autenticate():
+    msg = "Los datos introducidos son incorrectos."
+    if request.method == "POST":
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+        # Check data
+        if username is None:
+            msg = "Nombre de usuario no definido"
+        elif password is None:
+            msg = "Contraseña no definida"
+        elif not queries.user_exists(username):
+            msg = "Usuario no existe"
+        else:
+            password_hashed = hashlib.sha256(password.encode()).hexdigest()
+            real_password = queries.get_password_user(username)
+            if password_hashed == real_password:
+                # Starts session
+                data = queries.get_info_user(username)
+                return {"status": 200, "data": data}
+    return {"status": 400, "msg": msg}
+
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -322,11 +350,11 @@ def user_lock_station(api=False, id_user_api=None, id_station_api=False):
         # Check user is OCUPADO
         state_user = queries.get_state_user_by_id(id_user)
         if state_user != "OCUPADO":
-            raise Exception("Usuario no esta Ocupado!")
+            raise Exception("Usuario no esta Ocupado! No dispone de ninguna bicicleta para bloquear.")
         # Check station is LIBRE
         state_station = queries.get_state_station(id_station)
         if state_station != "LIBRE":
-            raise Exception("La estacion no esta Libre!")
+            raise Exception("La estacion no esta Libre! Ya existe una bicicleta en la estación.")
 
         # Get id_bike
         id_bike = queries.get_bike_from_user_by_id(id_user)
@@ -361,11 +389,11 @@ def user_book_station(api=False, id_user_api=None, id_station_api=None):
         # Check user is DISPONIBLE
         state_user = queries.get_state_user_by_id(id_user)
         if state_user != "DISPONIBLE":
-            raise Exception("Usuario no esta Disponible!")
+            raise Exception("Usuario no tiene el estado Disponible! Por favor, bloquee su bicicleta o cancele su reserva.")
         # Check station is DISPONIBLE
         state_station = queries.get_state_station(id_station)
         if state_station != "DISPONIBLE":
-            raise Exception("La estacion no esta Disponible!")
+            raise Exception("La estacion no esta Disponible! No hay bici disponible.")
 
         # Get id_bike
         id_bike = queries.get_bike_from_station(id_station)
@@ -400,7 +428,7 @@ def user_unlock_station(api=False, id_user_api=None, id_station_api=None):
         # Check user is RESERVADO
         state_user = queries.get_state_user_by_id(id_user)
         if state_user != "RESERVADO":
-            raise Exception("Usuario no esta Reservado!")
+            raise Exception("Usuario no ha reservado ninguna estación! Por favor, reserve la estación por web o bluetooth.")
         # Check station is RESERVADO
         state_station = queries.get_state_station(id_station)
         if state_station != "RESERVADO":
