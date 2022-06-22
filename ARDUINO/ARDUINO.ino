@@ -21,6 +21,11 @@
 #define PIN_LED D2
 #define PIN_BUZZER D1
 
+//WIFI variables
+const char* ssid = "INTRODUCIR SSID";
+const char* password = "INTRODUCIR PASSWORD";
+//API REQUESTS
+String serverName = "INTRODUCIR RUTA API REST: http://IP:5000";
 
 // CONSTANTES DE LA ESTACION
 #define ID_STATION "urn:ngsi-ld:Station:MyStationJesus"
@@ -66,11 +71,7 @@ MFRC522 rfid(PIN_SDA, PIN_RST); // Instance of the class
 MFRC522::MIFARE_Key key;
 byte nuidPICC[4];
 
-//WIFI variables
-const char* ssid = "DIGIPONCHO";
-const char* password = "3BEtD7btmVQHDmgc";
-//API REQUESTS
-String serverName = "http://192.168.1.139:5000";
+
 
 void setup() {
   pinMode(PIN_LED, OUTPUT);
