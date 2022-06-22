@@ -45,6 +45,7 @@ String bleIdBikeUser;
 String bleIdStationUser;
 String bleStateUser;
 String bleAutenticationState = "DISCONNECTED";
+String bleTagRfidUser;
 
 
 // Led and Buzzer variables
@@ -144,9 +145,10 @@ void sound_buzzer(int now){
 }
 
 void listen_card_RFID(int now){
+//  Serial.print("hola");
  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
- if ( ! rfid.PICC_IsNewCardPresent())
-   return;
+// if ( ! rfid.PICC_IsNewCardPresent())
+//   return;
    
  // Verify if the NUID has been readed
  if ( ! rfid.PICC_ReadCardSerial())
@@ -165,31 +167,24 @@ void listen_card_RFID(int now){
  }
  
  if (now - lastLectureCard > maxTimeLecture) {
-   Serial.println(F("A new card has been detected."));
+   Serial.println(F("Nueva etiqueta RFID detectada!"));
    // Store NUID into nuidPICC array
    for (byte i = 0; i < 4; i++) {
      nuidPICC[i] = rfid.uid.uidByte[i];
    }
-   
-   Serial.println(F("The NUID tag is:"));
-   Serial.print(F("In hex: "));
-   printHex(rfid.uid.uidByte, rfid.uid.size);
-   Serial.println();
-   Serial.print(F("In dec: "));
-   printDec(rfid.uid.uidByte, rfid.uid.size);
-   Serial.println();
 
-   if (rfid.uid.uidByte[0] == nuidMyCard[0] &&
-     rfid.uid.uidByte[1] == nuidMyCard[1] &&
-     rfid.uid.uidByte[2] == nuidMyCard[2] &&
-     rfid.uid.uidByte[3] == nuidMyCard[3] ) {
-       Serial.write("COMMNAD: ACTIVATE!\n");
-       buzzerActive = true;
-       buzzerTime = now;
-       buzzerStartTime = now;
-       ledState = HIGH;
-       digitalWrite(PIN_LED, HIGH);
-     }
+   char tag_rfid[32] = "";
+   array_to_string(rfid.uid.uidByte, 4, tag_rfid);
+   Serial.println(F("TAG RFID:"));
+   Serial.print(tag_rfid);
+   
+    if(state.equals("RESERVADO")){
+      POST_unlock_by_rfid(tag_rfid);
+    }else if(state.equals("LIBRE")){
+      POST_lock_by_rfid(tag_rfid);
+    }
+    
+   
    lastLectureCard = now;
  }
  else Serial.println(F("Too early to read another card!"));
@@ -288,6 +283,9 @@ void listen_commands_bluetooth(int now){
         BT1.print("\n");
         BT1.print("* Username: ");
         BT1.print(bleUsername);
+        BT1.print("\n");
+        BT1.print("* Tag RFID: ");
+        BT1.print(bleTagRfidUser);
         BT1.print("\n");
         BT1.print("*** Estado: ");
         BT1.print(bleStateUser);
@@ -507,13 +505,87 @@ void POST_unlock_BLE(){
     }
 }
 
+void POST_unlock_by_rfid(char* tag_rfid){
+  //Check WiFi connection status
+    if(WiFi.status()== WL_CONNECTED){
+      WiFiClient client;
+      HTTPClient http;
+      http.begin(client, serverName + "/user_unlock_station_by_rfid");
+      http.addHeader("Content-Type", "application/json");
+      
+      // Data to send with HTTP POST
+      StaticJsonDocument<400> data;
+      data["tag_rfid"] = tag_rfid;
+      data["id_station"] = ID_STATION;
+      String requestBody;
+      serializeJson(data, requestBody);
+      
+      int httpResponseCode = http.POST(requestBody);
+      String payload = http.getString();
+      StaticJsonDocument<1000> response;
+      deserializeJson(response, payload);
+      String status_response = response["status"];
+      String msg = response["msg"];
+      if(status_response.equals("200")){
+        Serial.print("SE HA DESBLOQUEADO LA BICICLETA CON ÉXITO!\n");
+        activate_Led_Buzzer();
+      }else{
+        Serial.print("ERROR: No se ha podido desbloquear correctamente la bicicleta.");
+        Serial.print(msg);
+        Serial.print("\n");
+      }
+      // Free resources
+      http.end();
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+}
+
+void POST_lock_by_rfid(char* tag_rfid){
+  //Check WiFi connection status
+    if(WiFi.status()== WL_CONNECTED){
+      WiFiClient client;
+      HTTPClient http;
+      http.begin(client, serverName + "/user_lock_station_by_rfid");
+      http.addHeader("Content-Type", "application/json");
+      
+      // Data to send with HTTP POST
+      StaticJsonDocument<400> data;
+      data["tag_rfid"] = tag_rfid;
+      data["id_station"] = ID_STATION;
+      String requestBody;
+      serializeJson(data, requestBody);
+      
+      int httpResponseCode = http.POST(requestBody);
+      String payload = http.getString();
+      StaticJsonDocument<1000> response;
+      deserializeJson(response, payload);
+      String status_response = response["status"];
+      String msg = response["msg"];
+      if(status_response.equals("200")){
+        Serial.print("SE HA BLOQUEADO LA BICICLETA CON ÉXITO!\n");
+        activate_Led_Buzzer();
+      }else{
+        Serial.print("ERROR: No se ha podido bloquear correctamente la bicicleta.");
+        Serial.print(msg);
+        Serial.print("\n");
+      }
+      // Free resources
+      http.end();
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+}
+
 void GET_info_station(){
   //Check WiFi connection status
     if(WiFi.status()== WL_CONNECTED){
       WiFiClient client;
       HTTPClient http;
 
-      Serial.println("GET INFO STATION");
+//      Serial.println("GET INFO STATION");
       http.begin(client, serverName + "/api/entities/station/info/" + ID_STATION);
       int httpResponseCode = http.GET();
       
@@ -548,7 +620,7 @@ void GET_info_user_BLE(){
       WiFiClient client;
       HTTPClient http;
 
-      Serial.println("GET INFO User");
+//      Serial.println("GET INFO User");
       http.begin(client, serverName + "/api/entities/user/info/" + bleUsername);
       int httpResponseCode = http.GET();
       
@@ -561,6 +633,7 @@ void GET_info_user_BLE(){
         bleStateUser = (const char*) response["data"]["state"]["value"];
         bleIdBikeUser = (const char*) response["data"]["id_bike"]["value"];
         bleIdStationUser = (const char*) response["data"]["id_station"]["value"];
+        bleTagRfidUser = (const char*) response["data"]["tag_rfid"]["value"];
       }else{
         String msg_response = response["data"];
         Serial.print("HTTP Response code: ");
@@ -601,4 +674,16 @@ void printDec(byte *buffer, byte bufferSize) {
    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
    Serial.print(buffer[i], DEC);
  }
+}
+
+void array_to_string(byte array[], unsigned int len, char buffer[])
+{
+   for (unsigned int i = 0; i < len; i++)
+   {
+      byte nib1 = (array[i] >> 4) & 0x0F;
+      byte nib2 = (array[i] >> 0) & 0x0F;
+      buffer[i*2+0] = nib1  < 0xA ? '0' + nib1  : 'A' + nib1  - 0xA;
+      buffer[i*2+1] = nib2  < 0xA ? '0' + nib2  : 'A' + nib2  - 0xA;
+   }
+   buffer[len*2] = '\0';
 }
